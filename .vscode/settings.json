@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "vic.h": "c",
+        "sprites.h": "c",
+        "types.h": "c",
+        "string.h": "c",
+        "game.h": "c"
+    }
+}

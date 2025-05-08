@@ -2,7 +2,7 @@ CC = oscar64.exe
 CFLAGS = -O3 -tm=c64 -tf=prg
 SRC = src\main.c
 OUT = build\main.prg
-VICE = "C:\Program Files\VICE\bin\x64sc.exe"
+VICE = "C:\Program Files\GTK3VICE-3.9-win64\bin\x64sc.exe"
 
 all:
 	if not exist build mkdir build
