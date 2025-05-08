@@ -3,7 +3,7 @@
 int main()
 {
     __asm {
-        jsr $E544
+        jsr $E544 // clear the screen
     }
     
 
