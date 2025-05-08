@@ -1,0 +1,210 @@
+sections
+0a00 - 4b87 : DATA, code
+4b87 - 4e80 : DATA, data
+4e80 - b1ec : BSS, bss
+b1f0 - c400 : HEAP, heap
+c400 - c744 : STACK, stack
+00f7 - 00ff : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+c7f6 - c800 : SSTACK, sstack
+c7f6 - c7f6 : SSTACK, memset@stack
+c7f6 - c7f6 : SSTACK, bmu_text@stack
+c7ee - c7f6 : SSTACK, bm_put_chars@stack
+c7f6 - c7f6 : SSTACK, sin@stack
+c7f6 - c7f6 : SSTACK, cos@stack
+c7f2 - c7f6 : SSTACK, exp@stack
+c7f6 - c7f6 : SSTACK, qsort@stack
+c7e5 - c7f6 : SSTACK, bm_trapezoid_fill@stack
+c7f6 - c7f6 : SSTACK, lmuldiv16s@stack
+c7ed - c7f6 : SSTACK, bm_line@stack
+c7f6 - c7f6 : SSTACK, getch@stack
+c744 - c7e5 : SSTACK, main@stack
+
+regions
+0a00 - c400 : 4e80, a7ec, main
+00f7 - 00ff : 0000, 0008, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00ff : tworks, DATA:zeropage
+00ff - 00ff : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0a00 - 28db : main, NATIVE_CODE:code
+28db - 28f2 : NMITrampoline, NATIVE_CODE:code
+28f2 - 28f9 : DoneTrampoline, NATIVE_CODE:code
+28f9 - 2900 : bm_put_chars@proxy, NATIVE_CODE:code
+2900 - 2917 : IRQTrampoline, NATIVE_CODE:code
+2917 - 2933 : memset, NATIVE_CODE:code
+2933 - 2946 : *, DATA:code
+2946 - 3160 : bm_put_chars, NATIVE_CODE:code
+3160 - 32be : bmu_text, NATIVE_CODE:code
+32d4 - 32e4 : sin@proxy, NATIVE_CODE:code
+32e4 - 3473 : sin, NATIVE_CODE:code
+3473 - 350d : crt_fmul, NATIVE_CODE:code
+350d - 363e : exp, NATIVE_CODE:code
+363e - 3652 : *, DATA:code
+3652 - 3663 : *, DATA:code
+3663 - 3868 : qsort, NATIVE_CODE:code
+3868 - 3879 : *, DATA:code
+3879 - 3c2c : bm_trapezoid_fill, NATIVE_CODE:code
+3c2c - 445f : bm_line, NATIVE_CODE:code
+445f - 451e : lmuldiv16s, NATIVE_CODE:code
+451e - 4525 : getch, NATIVE_CODE:code
+4525 - 455d : mul16by8, NATIVE_CODE:code
+455d - 45a2 : freg, NATIVE_CODE:code
+45a2 - 468f : faddsub, NATIVE_CODE:code
+468f - 46bd : crt_fmul8, NATIVE_CODE:code
+46bd - 476b : crt_fdiv, NATIVE_CODE:code
+476b - 4865 : fround, NATIVE_CODE:code
+4865 - 48b3 : f32_to_i16, NATIVE_CODE:code
+48b3 - 48d1 : sint16_to_float, NATIVE_CODE:code
+48d1 - 48fe : uint16_to_float, NATIVE_CODE:code
+48fe - 494d : crt_fcmp, NATIVE_CODE:code
+494d - 49a6 : mul32, NATIVE_CODE:code
+49a6 - 49c1 : divs32, NATIVE_CODE:code
+49c1 - 49db : negaccu32, NATIVE_CODE:code
+49db - 49f5 : negtmp32, NATIVE_CODE:code
+49f5 - 4acc : divmod32, NATIVE_CODE:code
+4acc - 4ad3 : freg@proxy, NATIVE_CODE:code
+4ad3 - 4ae6 : freg@proxy, NATIVE_CODE:code
+4ae6 - 4aed : freg@proxy, NATIVE_CODE:code
+4aed - 4af8 : freg@proxy, NATIVE_CODE:code
+4af8 - 4aff : freg@proxy, NATIVE_CODE:code
+4aff - 4b12 : freg@proxy, NATIVE_CODE:code
+4b12 - 4b25 : freg@proxy, NATIVE_CODE:code
+4b25 - 4b3c : freg@proxy, NATIVE_CODE:code
+4b3c - 4b53 : freg@proxy, NATIVE_CODE:code
+4b53 - 4b5e : freg@proxy, NATIVE_CODE:code
+4b5e - 4b69 : freg@proxy, NATIVE_CODE:code
+4b69 - 4b74 : freg@proxy, NATIVE_CODE:code
+4b74 - 4b87 : freg@proxy, NATIVE_CODE:code
+4b87 - 4b88 : spentry, DATA:data
+4b88 - 4b90 : SRect, DATA:data
+4b90 - 4dbb : TinyFont, DATA:data
+4dbb - 4dc3 : tbitmap, DATA:data
+4dc3 - 4dcb : lmask, DATA:data
+4dcb - 4dd3 : rmask, DATA:data
+4dd3 - 4ddb : Screen, DATA:data
+4ddb - 4de3 : ubitmask, DATA:data
+4de3 - 4def : vlight, DATA:bss
+4e00 - 4e48 : NineShadesOfGrey, DATA:data
+4e48 - 4e80 : bitshift, DATA:data
+4e80 - 4fc0 : tbuffer, DATA:bss
+4e80 - 4e80 : BSSStart, START:bss
+4fc0 - 5000 : wmat, DATA:bss
+5000 - 50e0 : BLIT_CODE, DATA:bss
+5100 - 5140 : pmat, DATA:bss
+5140 - 7e4c : v, DATA:bss
+7e4c - 7e8c : rmat, DATA:bss
+7e8c - 7ecc : tmat, DATA:bss
+7ecc - 8dd0 : p, DATA:bss
+8dd0 - 9cd4 : z, DATA:bss
+9cd4 - b1ec : surfs, DATA:bss
+b1ec - b1ec : BSSEnd, END:bss
+c744 - c744 : StackEnd, END:stack
+c744 - c77d : main@stack, BSS:main@stack
+c77d - c781 : x, BSS:main@stack
+c781 - c78d : vt, BSS:main@stack
+c78d - c79d : ma, BSS:main@stack
+c79d - c7ad : ma, BSS:main@stack
+c7ad - c7bd : ma, BSS:main@stack
+c7bd - c7c1 : x, BSS:main@stack
+c7c1 - c7cd : d1, BSS:main@stack
+c7cd - c7d9 : d0, BSS:main@stack
+c7d9 - c7e5 : vp, BSS:main@stack
+c7e5 - c7f6 : bm_trapezoid_fill@stack, BSS:bm_trapezoid_fill@stack
+c7ed - c7f6 : bm_line@stack, BSS:bm_line@stack
+c7ee - c7f6 : bm_put_chars@stack, BSS:bm_put_chars@stack
+c7f2 - c7f6 : x, BSS:exp@stack
+c7f6 - c800 : sstack, STACK:sstack
+
+objects by size
+5140 (2d0c) : v, DATA:bss
+0a00 (1edb) : main, NATIVE_CODE:code
+9cd4 (1518) : surfs, DATA:bss
+7ecc (0f04) : p, DATA:bss
+8dd0 (0f04) : z, DATA:bss
+3c2c (0833) : bm_line, NATIVE_CODE:code
+2946 (081a) : bm_put_chars, NATIVE_CODE:code
+3879 (03b3) : bm_trapezoid_fill, NATIVE_CODE:code
+4b90 (022b) : TinyFont, DATA:data
+3663 (0205) : qsort, NATIVE_CODE:code
+32e4 (018f) : sin, NATIVE_CODE:code
+3160 (015e) : bmu_text, NATIVE_CODE:code
+4e80 (0140) : tbuffer, DATA:bss
+350d (0131) : exp, NATIVE_CODE:code
+476b (00fa) : fround, NATIVE_CODE:code
+45a2 (00ed) : faddsub, NATIVE_CODE:code
+5000 (00e0) : BLIT_CODE, DATA:bss
+49f5 (00d7) : divmod32, NATIVE_CODE:code
+445f (00bf) : lmuldiv16s, NATIVE_CODE:code
+46bd (00ae) : crt_fdiv, NATIVE_CODE:code
+3473 (009a) : crt_fmul, NATIVE_CODE:code
+494d (0059) : mul32, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+48fe (004f) : crt_fcmp, NATIVE_CODE:code
+4865 (004e) : f32_to_i16, NATIVE_CODE:code
+4e00 (0048) : NineShadesOfGrey, DATA:data
+455d (0045) : freg, NATIVE_CODE:code
+4fc0 (0040) : wmat, DATA:bss
+5100 (0040) : pmat, DATA:bss
+7e4c (0040) : rmat, DATA:bss
+7e8c (0040) : tmat, DATA:bss
+c744 (0039) : main@stack, BSS:main@stack
+4525 (0038) : mul16by8, NATIVE_CODE:code
+4e48 (0038) : bitshift, DATA:data
+468f (002e) : crt_fmul8, NATIVE_CODE:code
+48d1 (002d) : uint16_to_float, NATIVE_CODE:code
+48b3 (001e) : sint16_to_float, NATIVE_CODE:code
+2917 (001c) : memset, NATIVE_CODE:code
+49a6 (001b) : divs32, NATIVE_CODE:code
+49c1 (001a) : negaccu32, NATIVE_CODE:code
+49db (001a) : negtmp32, NATIVE_CODE:code
+28db (0017) : NMITrampoline, NATIVE_CODE:code
+2900 (0017) : IRQTrampoline, NATIVE_CODE:code
+4b25 (0017) : freg@proxy, NATIVE_CODE:code
+4b3c (0017) : freg@proxy, NATIVE_CODE:code
+4ad3 (0013) : freg@proxy, NATIVE_CODE:code
+4aff (0013) : freg@proxy, NATIVE_CODE:code
+4b12 (0013) : freg@proxy, NATIVE_CODE:code
+4b74 (0013) : freg@proxy, NATIVE_CODE:code
+c7e5 (0011) : bm_trapezoid_fill@stack, BSS:bm_trapezoid_fill@stack
+32d4 (0010) : sin@proxy, NATIVE_CODE:code
+c78d (0010) : ma, BSS:main@stack
+c79d (0010) : ma, BSS:main@stack
+c7ad (0010) : ma, BSS:main@stack
+4de3 (000c) : vlight, DATA:bss
+c781 (000c) : vt, BSS:main@stack
+c7c1 (000c) : d1, BSS:main@stack
+c7cd (000c) : d0, BSS:main@stack
+c7d9 (000c) : vp, BSS:main@stack
+4aed (000b) : freg@proxy, NATIVE_CODE:code
+4b53 (000b) : freg@proxy, NATIVE_CODE:code
+4b5e (000b) : freg@proxy, NATIVE_CODE:code
+4b69 (000b) : freg@proxy, NATIVE_CODE:code
+c7f6 (000a) : sstack, STACK:sstack
+c7ed (0009) : bm_line@stack, BSS:bm_line@stack
+00f7 (0008) : tworks, DATA:zeropage
+4b88 (0008) : SRect, DATA:data
+4dbb (0008) : tbitmap, DATA:data
+4dc3 (0008) : lmask, DATA:data
+4dcb (0008) : rmask, DATA:data
+4dd3 (0008) : Screen, DATA:data
+4ddb (0008) : ubitmask, DATA:data
+c7ee (0008) : bm_put_chars@stack, BSS:bm_put_chars@stack
+28f2 (0007) : DoneTrampoline, NATIVE_CODE:code
+28f9 (0007) : bm_put_chars@proxy, NATIVE_CODE:code
+451e (0007) : getch, NATIVE_CODE:code
+4acc (0007) : freg@proxy, NATIVE_CODE:code
+4ae6 (0007) : freg@proxy, NATIVE_CODE:code
+4af8 (0007) : freg@proxy, NATIVE_CODE:code
+c77d (0004) : x, BSS:main@stack
+c7bd (0004) : x, BSS:main@stack
+c7f2 (0004) : x, BSS:exp@stack
+4b87 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00ff (0000) : ZeroEnd, END:zeropage
+4e80 (0000) : BSSStart, START:bss
+b1ec (0000) : BSSEnd, END:bss
+c744 (0000) : StackEnd, END:stack
