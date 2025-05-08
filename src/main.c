@@ -1,11 +1,13 @@
 #include <stdio.h>
+#include <include/c64/vic.h>
 
-int main()
+// Pointer to first byte of screen memory
+byte * const Screen = (byte*)0x0400;
+
+int main(void)
 {
-    __asm {
-        jsr $E544 // clear the screen
-    }
-    
-
-    return 0;
+	// Fill screen memory with all 256 characters
+	for(int i=0; i<256; i++)
+		Screen[i] = i;
+	return 0;
 }
