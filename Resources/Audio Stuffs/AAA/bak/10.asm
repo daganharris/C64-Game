@@ -1,7 +1,0 @@
-*=$2000
-
-;sample
-
-DATASTART
-
-DATASTOP
