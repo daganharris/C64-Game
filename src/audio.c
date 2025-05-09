@@ -3,119 +3,124 @@
 #include "audio.h"
 
 // ─── Hardware registers & vectors ─────────────────────────────────────────────
-#define SID         ((volatile uint8_t*)0xD400)
-#define CIA2_ICR    (*(volatile uint8_t*)0xDD0D)
-#define CIA2_CRA    (*(volatile uint8_t*)0xDD0E)
-#define CIA2_TALO   (*(volatile uint8_t*)0xDD04)
-#define CIA2_TAHI   (*(volatile uint8_t*)0xDD05)
-#define CPU_BANK    (*(volatile uint8_t*)0x01)
-#define NMI_VECTOR  ((volatile uint8_t*)0xFFFA)
+#define SID         ((volatile uint8_t*)0xD400)   // SID base address
+#define CIA2_ICR    (*(volatile uint8_t*)0xDD0D)  // CIA2 interrupt control register
+#define CIA2_CRA    (*(volatile uint8_t*)0xDD0E)  // CIA2 control register A
+#define CIA2_TALO   (*(volatile uint8_t*)0xDD04)  // CIA2 Timer A low byte
+#define CIA2_TAHI   (*(volatile uint8_t*)0xDD05)  // CIA2 Timer A high byte
+#define CPU_BANK    (*(volatile uint8_t*)0x01)    // CPU bank register
+#define NMI_VECTOR  ((volatile uint8_t*)0xFFFA)   // NMI vector location
 
-// ─── Sample data symbols (linker provides these) ───────────────────────────────
-extern const uint8_t sample_data[];      // start of your binary
-extern const uint8_t sample_data_end[];  // one past the last byte
+// ─── Sample data symbols (provided by linker) ─────────────────────────────────
+extern const uint8_t sample_data[];       // binary audio start
+extern const uint8_t sample_data_end[];   // binary audio end
 #define DATASTART   (sample_data)
 #define DATASTOP    (sample_data_end)
 
-// ─── Shared state for playback ─────────────────────────────────────────────────
-volatile uint8_t flag, sample, done;
-volatile const uint8_t* ptr;
+// ─── Shared state for playback ────────────────────────────────────────────────
+volatile uint8_t flag = 0, sample = 0, done = 0;
+volatile const uint8_t* ptr = 0;  // current playback pointer
 
-// ─── Forward decl ──────────────────────────────────────────────────────────────
-void __fastcall__ play_digi(void);
-__interrupt__ void __fastcall__ nmi_handler(void);
+// ─── Forward declaration ──────────────────────────────────────────────────────
+void play_digi(void);
+void nmi_handler(void);
 
-// ─── play_digi: sets up SID, CIA2, NMI vector, then waits ────────────────────
-void __fastcall__ play_digi(void) {
-    // save A,X
-    __asm{"PHA\nTXA\nPHA"};
+// ─── play_digi: sets up SID, CIA2, NMI vector, then waits ─────────────────────
+void play_digi(void) {
+    __asm { PHA TXA PHA }          // Save A and X
 
-    // disable interrupts
-    CIA2_ICR = 0;
-    (void)CIA2_ICR;
-    __asm__("SEI");
+    CIA2_ICR = 0;                  // Disable CIA2 interrupts
+    (void)CIA2_ICR;                // Clear any pending interrupts
+    __asm { SEI }                  // Disable IRQs globally
 
-    // bank out KERNAL
-    CPU_BANK = 0x35;
+    CPU_BANK = 0x35;               // Bank out KERNAL to access RAM
 
-    // clear all SID regs
-    for (uint8_t i=0;i<25;i++) SID[i]=0;
+    // Reset all SID registers
+    for (uint8_t i = 0; i < 25; i++) SID[i] = 0;
 
-    // simple voice & filter init
-    SID[5]=0; SID[6]=0xF0; SID[4]=1;
-    SID[0x0C]=0; SID[0x0D]=0xF0; SID[0x0B]=1;
-    SID[0x13]=0; SID[0x14]=0xF0; SID[0x12]=1;
-    SID[0x15]=0; SID[0x16]=0x10; SID[0x17]=0xF7;
+    // Basic SID filter/volume config
+    SID[5]  = 0;
+    SID[6]  = 0xF0;
+    SID[4]  = 1;
+    SID[0x0C] = 0;
+    SID[0x0D] = 0xF0;
+    SID[0x0B] = 1;
+    SID[0x13] = 0;
+    SID[0x14] = 0xF0;
+    SID[0x12] = 1;
+    SID[0x15] = 0;
+    SID[0x16] = 0x10;
+    SID[0x17] = 0xF7;
 
-    // point NMI vector at our handler
-    uint16_t addr = (uint16_t)nmi_handler;
-    NMI_VECTOR[0] = addr & 0xFF;
-    NMI_VECTOR[1] = addr >> 8;
+    // Point NMI vector to our handler
+    uint16_t addr = (uint16_t)&nmi_handler;
+    NMI_VECTOR[0] = (uint8_t)(addr & 0xFF);   // Low byte
+    NMI_VECTOR[1] = (uint8_t)(addr >> 8);     // High byte
 
-    // init playback vars
+    // Init playback state
     flag = 0x55;
-    ptr  = DATASTART;
-    sample = *ptr++;
+    ptr = DATASTART;
+    sample = *ptr++;              // Load first sample nibble
 
-    // start CIA2 Timer A @8kHz
+    // Setup CIA2 Timer A to fire NMI at ~8kHz
     CIA2_TALO = 0x80;
     CIA2_TAHI = 0x00;
-    CIA2_ICR  = 0x81; // enable underflow NMI
-    CIA2_CRA  = 0x11;
+    CIA2_ICR  = 0x81;             // Enable Timer A interrupt
+    CIA2_CRA  = 0x11;             // Start Timer A
 
     done = 0;
-    while (!done) ;   // spin until sample end
+    while (!done);               // Spin until playback is complete
 
-    // restore A,X and re-enable interrupts
-    __asm{"PLA\nTAX\nPLA\nCLI"};
+    __asm { PLA TAX PLA CLI }    // Restore A, X and enable IRQs
 }
 
-// ─── NMI handler in inline asm ─────────────────────────────────────────────────
-__interrupt__ void __fastcall__ nmi_handler(void) {
+// ─── NMI handler (called ~8kHz via CIA2) ──────────────────────────────────────
+void nmi_handler(void) {
     __asm {
-        PHA                       ; save A
+        PHA                         ; Save A
 
         LDA sample
         ORA #$10
         AND #$1F
-        STA $D418                 ; SID volume
+        STA $D418                   ; Set SID volume (4-bit audio nibble)
 
-        LDA $DD0D                 ; clear CIA2 NMI
+        LDA $DD0D                   ; Clear CIA2 interrupt source
 
-        ASL flag
-        BCC loadnew
+        ASL flag                    ; Shift flag to toggle every other call
+        BCC loadnew                 ; Every 2nd NMI, load new nibble
         INC flag
 
         LDA sample
-        LSR
+        LSR                         ; Shift out high nibble for next call
         STA sample
         PLA
         RTI
 
     loadnew:
-        LDA ptr,Y                 ; load new sample nibble
+        LDY #0
+        LDA (ptr),Y                 ; Load next byte from pointer
         STA sample
-        INC ptr                   ; low-byte
+        INC ptr                     ; Increment low byte of pointer
         BNE check_done
-        INC ptr+1                 ; high-byte if wrapped
+        INC ptr+1                   ; If wrapped, increment high byte
 
     check_done:
         LDA ptr+1
-        CMP #>DATASTOP
+        CMP #>sample_data_end
         BNE exit_nmi
         LDA ptr
-        CMP #<DATASTOP
+        CMP #<sample_data_end
         BNE exit_nmi
 
     stop_playback:
         LDA #$08
-        STA $DD0E                 ; stop Timer A
+        STA $DD0E                   ; Stop Timer A
         LDA #$4F
-        STA $DD0D                 ; disable NMI source
-        LDA $DD0D                 ; clear pending
+        STA $DD0D                   ; Disable NMI source
+        LDA $DD0D                   ; Clear pending
         LDA #$37
-        STA $01                   ; restore KERNAL bank
-        INC done
+        STA $01                     ; Restore KERNAL bank
+        INC done                    ; Signal completion
 
     exit_nmi:
         PLA
