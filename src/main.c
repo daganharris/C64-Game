@@ -7,18 +7,11 @@
 
 int main(void)
 {
-	    __asm {
+	__asm {
         jsr $E544 // clear the screen
     }
-    
-	gameloop();
-	// // Fill screen memory with all 256 characters
-	// byte *ptr = Screen;
-	// for(int i = 0; i < 256; i++)
-	// 	*ptr++ = i;
-	// return 0;
 
-	// poke(646,2); // change text color to red
+	gameloop();
 }
 
 

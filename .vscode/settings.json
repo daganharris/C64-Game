@@ -4,6 +4,8 @@
         "sprites.h": "c",
         "types.h": "c",
         "string.h": "c",
-        "game.h": "c"
+        "game.h": "c",
+        "cmath": "c",
+        "stdio.h": "c"
     }
 }
