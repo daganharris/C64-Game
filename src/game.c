@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "game.h"
+#include "audio.h"
 
 
 const char SpriteImage[64] = {
@@ -101,6 +102,7 @@ inline void spritemovement() {
 }
 
 void gameloop() {
+    count_down();
     initsprite();
     makesprite();
 
