@@ -3,15 +3,13 @@
 #include <include/c64/types.h>
 #include "game.h"
 
+
+
 int main(void)
 {
 	__asm {
         jsr $E544 // clear the screen
-	}
+    }
 
-	countdown_sequence();
-
-	while (1);
-
-	return 0;
+	gameloop();
 }
