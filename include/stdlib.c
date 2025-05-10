@@ -544,7 +544,7 @@ unsigned heapfree(void)
 }
 
 #if 0
-struct Heap {q
+struct Heap {
 	unsigned int	size;
 	Heap		*	next;
 }	*	freeHeap;
