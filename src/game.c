@@ -31,16 +31,18 @@ const char spr2Img[64] = {
 const char spr3Img[64] = {
     15,153,240,29,219,248,51,255,252,103,255,254,79,255,254,223,255,255,176,254,31,230,124,207,230,124,207,240,254,31,255,255,255,255,255,255,255,255,253,255,255,249,255,255,243,127,255,246,63,255,228,63,255,140,31,191,56,15,99,240,3,193,224
 };
-
+const char spr4Img[64] = {
+    0,12,0,0,30,0,0,51,0,0,97,128,0,192,192,1,128,96,127,255,254,162,42,35,197,68,85,168,138,137,145,81,21,170,34,163,196,84,69,138,136,169,145,21,17,98,162,42,68,69,70,40,168,140,17,17,88,14,42,48,3,255,192
+};
 char * const Screen = (char *)0x0400;
 char * const SpriteMem1 = (char *)(SPRITE_BASE_ADDR + 0);
 char * const SpriteMem2 = (char *)(SPRITE_BASE_ADDR + 64);
 char * const SpriteMem3 = (char *)(SPRITE_BASE_ADDR + 128);
 char * const SpriteMem4 = (char *)(SPRITE_BASE_ADDR + 192);
-char * const SpriteMem5 = (char *)(SPRITE_BASE_ADDR + 256);
-char * const SpriteMem6 = (char *)(SPRITE_BASE_ADDR + 320);
-char * const SpriteMem7 = (char *)(SPRITE_BASE_ADDR + 384);
-char * const SpriteMem8 = (char *)(SPRITE_BASE_ADDR + 448);
+// char * const SpriteMem5 = (char *)(SPRITE_BASE_ADDR + 256);
+// char * const SpriteMem6 = (char *)(SPRITE_BASE_ADDR + 320);
+// char * const SpriteMem7 = (char *)(SPRITE_BASE_ADDR + 384);
+// char * const SpriteMem8 = (char *)(SPRITE_BASE_ADDR + 448);
 
 typedef struct 
 {
@@ -56,6 +58,15 @@ typedef struct
 Player Blueberry;
 Player Banana;
 Player Apple;
+Player Basket = {
+    .sp = 3,
+    .xpos = 50,
+    .ypos = 100,
+    .xVel = 0,
+    .yVel = 0,
+    .color = 12,
+    .show = true
+};
 
 inline void poke(unsigned addr, byte value)
 {
@@ -120,6 +131,17 @@ void handleCollision(Player *p1, Player *p2) {
     }
 }
 
+void handleBasketCollision(Player *p1, Player *basket) {
+    if (isColliding(p1, basket)) {
+        spr_show(p1->sp, false);
+        p1->xVel = 0;
+        p1->yVel = 0;
+        p1->xpos = basket->xpos;
+        p1->ypos = basket->ypos;
+        spr_move(p1->sp, p1->xpos, p1->ypos);
+    }
+}
+
 inline void gameloop() {
     initsprite(&Blueberry, 0, 4);
     makesprite(&Blueberry, spr1Img, SpriteMem1);
@@ -127,6 +149,7 @@ inline void gameloop() {
     makesprite(&Banana, spr2Img, SpriteMem2);
     initsprite(&Apple, 2, 5);
     makesprite(&Apple, spr3Img, SpriteMem3);
+    makesprite(&Basket, spr4Img, SpriteMem4);
 
 
     while (true) {        
@@ -137,6 +160,10 @@ inline void gameloop() {
         handleCollision(&Blueberry, &Banana);
         handleCollision(&Blueberry, &Apple);
         handleCollision(&Banana, &Apple);
+
+        handleBasketCollision(&Blueberry, &Basket);
+        handleBasketCollision(&Banana, &Basket);
+        handleBasketCollision(&Apple, &Basket);
 
         vic_waitFrame();
     }
