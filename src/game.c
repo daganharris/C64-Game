@@ -102,7 +102,6 @@ inline void spritemovement() {
 }
 
 void gameloop() {
-    count_down();
     initsprite();
     makesprite();
 

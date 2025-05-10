@@ -1,25 +1,15 @@
 #include <stdio.h>
+#include <include/c64/memmap.h>
 #include <include/c64/vic.h>
-#include <include/c64/types.h>
-#include "game.h"
+#include "audio.h"
 
+int main(void) {
 
-
-int main(void)
-{
-	    __asm {
-        jsr $E544 // clear the screen
-    }
+	printf("PLAYBACK START");
     
-	gameloop();
-	// // Fill screen memory with all 256 characters
-	// byte *ptr = Screen;
-	// for(int i = 0; i < 256; i++)
-	// 	*ptr++ = i;
-	// return 0;
+	play_digi();
 
-	// poke(646,2); // change text color to red
+	printf("PLAYBACK STOP");
+
+    return 0;
 }
-
-
-

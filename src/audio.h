@@ -1,10 +1,11 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-extern void _play_digi(void);
+#include <stdint.h>
 
-void count_down(void);
+// audio.h
+#pragma compile("audio.c")
 
-#pragma compile("audio.c");
+void play_digi();
 
 #endif
