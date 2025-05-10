@@ -3,8 +3,6 @@
 #include <include/c64/types.h>
 #include "game.h"
 
-
-
 int main(void)
 {
 	__asm {

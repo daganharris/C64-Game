@@ -124,6 +124,6 @@ void vic_waitRange(char below, char above);
 // reference to the VIC chip
 #define vic	(*((struct VIC *)0xd000))
 
-//#pragma compile("vic.c")
+#pragma compile("vic.c")
 
 #endif
