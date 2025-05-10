@@ -7,7 +7,11 @@ int main(void)
 {
 	__asm {
         jsr $E544 // clear the screen
-    }
+	}
 
-	gameloop();
+	countdown_sequence();
+
+	while (1);
+
+	return 0;
 }
