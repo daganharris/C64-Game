@@ -3,6 +3,7 @@
 #include <include/c64/vic.h>
 #include <include/c64/sprites.h>
 #include <include/c64/types.h>
+#include <include/c64/memmap.h>
 #include <stdbool.h>
 #include <string.h>
 #include "game.h"
@@ -19,31 +20,11 @@
 #define BOTTOM_BORDER (250 - SPRITE_HEIGHT)  // = 228
 
 const char SpriteImage[64] = {
-	0b00000000, 0b11111000, 0b00000000,
-	0b00000011, 0b11111110, 0b00000000,
-	0b00001111, 0b11111111, 0b10000000,
-	0b00011111, 0b11111111, 0b11000000,
-	0b00111111, 0b11111111, 0b11100000,
-	0b00111111, 0b11111111, 0b11100000,
-	0b01111111, 0b11111111, 0b11110000,
-	0b01111111, 0b11111111, 0b11110000,
-	0b11111111, 0b11111111, 0b11111000,
-	0b11111111, 0b11111111, 0b11111000,
-	0b11111111, 0b11111111, 0b11111000,
-	0b11111111, 0b11111111, 0b11111000,
-	0b11111111, 0b11111111, 0b11111000,
-	0b01111111, 0b11111111, 0b11110000,
-	0b01111111, 0b11111111, 0b11110000,
-	0b00111111, 0b11111111, 0b11100000,
-	0b00111111, 0b11111111, 0b11100000,
-	0b00011111, 0b11111111, 0b11000000,
-	0b00001111, 0b11111111, 0b10000000,
-	0b00000011, 0b11111110, 0b00000000,
-	0b00000000, 0b11111000, 0b00000000
+    0,24,0,3,59,128,7,101,224,15,125,224,31,131,248,31,255,252,63,255,254,63,255,254,120,126,30,123,126,222,251,126,223,251,126,223,248,126,26,255,255,242,127,255,228,63,255,204,63,255,216,31,255,144,15,255,48,3,255,192,0,126,0
 };
-
 char * const Screen = (char *)0x0400;
 char * const Sprite = (char *)0x0380;
+
 
 typedef struct 
 {
@@ -74,7 +55,7 @@ inline void initsprite() {
     p.ypos = 100;
     p.xVel = 2; // Constant horizontal velocity
     p.yVel = 2; // Constant vertical velocity
-    p.color = 1;
+    p.color = 4; // Color of the sprite
     p.show = true;
 }
 
@@ -91,20 +72,12 @@ inline void updatesprite() {
 
     if (p.xpos <= LEFT_BORDER || p.xpos >= RIGHT_BORDER) {
         p.xVel = -p.xVel;
-        p.color++;
-        if (p.color == 10) { p.color = 0; }
-        if (p.color == 6) { p.color = 7; }
-        spr_color(p.sp, p.color);
         if (p.xpos < LEFT_BORDER) p.xpos = LEFT_BORDER;
         if (p.xpos > RIGHT_BORDER) p.xpos = RIGHT_BORDER;
     }
 
     if (p.ypos <= TOP_BORDER || p.ypos >= BOTTOM_BORDER) {
         p.yVel = -p.yVel;
-        p.color++;
-        if (p.color == 10) { p.color = 0; }
-        if (p.color == 6) { p.color = 7; }
-        spr_color(p.sp, p.color);
         if (p.ypos < TOP_BORDER) p.ypos = TOP_BORDER;
         if (p.ypos > BOTTOM_BORDER) p.ypos = BOTTOM_BORDER;
     }
