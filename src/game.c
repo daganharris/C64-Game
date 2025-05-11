@@ -82,8 +82,8 @@ typedef struct {
 
 Position startPositions[3] = {
     {10 + LEFT_BORDER, 10 + TOP_BORDER},
-    {10 + LEFT_BORDER, 50 + TOP_BORDER},
-    {55 + LEFT_BORDER, 38 + TOP_BORDER}
+    {25 + LEFT_BORDER, 40 + TOP_BORDER},
+    {75 + LEFT_BORDER, 75 + TOP_BORDER}
 };
 
 int positionIndex = 0;
