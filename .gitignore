@@ -1,4 +1,3 @@
 build/
-Makefile
 .vscode/
 .github/instructions/copilot_context_instructions.md
