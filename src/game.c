@@ -32,6 +32,7 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
+char spriteOrder[3] = {255,255,255};
 
 const char spr1Img[64] = {
     0,24,0,3,59,128,7,101,224,15,125,224,31,131,248,31,255,252,63,255,254,63,255,254,120,126,30,123,126,222,251,126,223,251,126,223,248,126,26,255,255,242,127,255,228,63,255,204,63,255,216,31,255,144,15,255,48,3,255,192,0,126,0
@@ -246,7 +247,7 @@ void handleCollision(Player *p1, Player *p2) {
     }
 }
 
-void handleBasketCollision(Player *p1, Player *basket) {
+bool handleBasketCollision(Player *p1, Player *basket) {
     if (isColliding(p1, basket)) {
         spr_show(p1->sp, false);
         p1->xVel = 0;
@@ -254,7 +255,17 @@ void handleBasketCollision(Player *p1, Player *basket) {
         p1->xpos = basket->xpos;
         p1->ypos = basket->ypos;
         spr_move(p1->sp, p1->xpos, p1->ypos);
+        for (int i = 0; i < 3; i++) {
+            if (spriteOrder[i] == 255) {
+                spriteOrder[i] = p1->sp;
+                if (i == 2) {
+                    return true;
+                }
+                break;
+            }
+        }
     }
+    return false;
 }
 
 inline void gameloop() {
@@ -270,8 +281,8 @@ inline void gameloop() {
     makesprite(&Apple, spr3Img, SpriteMem3);
     makesprite(&Basket, spr4Img, SpriteMem4);
 
-
-    while (true) {        
+    bool gameOver = false;
+    while (!gameOver) {        
         updatesprite(&Blueberry);
         updatesprite(&Banana);
         updatesprite(&Apple);
@@ -280,9 +291,9 @@ inline void gameloop() {
         handleCollision(&Blueberry, &Apple);
         handleCollision(&Banana, &Apple);
 
-        handleBasketCollision(&Blueberry, &Basket);
-        handleBasketCollision(&Banana, &Basket);
-        handleBasketCollision(&Apple, &Basket);
+        if (handleBasketCollision(&Blueberry, &Basket)) gameOver = true;
+        if (handleBasketCollision(&Banana, &Basket)) gameOver = true;
+        if (handleBasketCollision(&Apple, &Basket)) gameOver = true;
 
         vic_waitFrame();
     }
