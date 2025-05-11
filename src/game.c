@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "game.h"
+#include "screens.h"
 
 #define SPRITE_BASE_ADDR 0x2000
 
@@ -22,6 +23,17 @@
 #define TOP_BORDER 50
 #define BOTTOM_BORDER (250 - SPRITE_HEIGHT)  // = 228
 
+#define SCREEN_RAM ((byte*)0x0400)
+#define CHARSET_RAM ((byte*)0x1000)  // default charset memory location
+#define SCREEN_COLS 40
+#define CHAR_WIDTH 8
+#define CHAR_HEIGHT 8
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
+char spriteOrder[3] = {255,255,255};
+
 const char spr1Img[64] = {
     0,24,0,3,59,128,7,101,224,15,125,224,31,131,248,31,255,252,63,255,254,63,255,254,120,126,30,123,126,222,251,126,223,251,126,223,248,126,26,255,255,242,127,255,228,63,255,204,63,255,216,31,255,144,15,255,48,3,255,192,0,126,0
 };
@@ -34,6 +46,14 @@ const char spr3Img[64] = {
 const char spr4Img[64] = {
     0,12,0,0,30,0,0,51,0,0,97,128,0,192,192,1,128,96,127,255,254,162,42,35,197,68,85,168,138,137,145,81,21,170,34,163,196,84,69,138,136,169,145,21,17,98,162,42,68,69,70,40,168,140,17,17,88,14,42,48,3,255,192
 };
+
+const char *spriteImages[] = {
+    spr1Img,
+    spr2Img,
+    spr3Img,
+    spr4Img 
+};
+
 char * const Screen = (char *)0x0400;
 char * const SpriteMem1 = (char *)(SPRITE_BASE_ADDR + 0);
 char * const SpriteMem2 = (char *)(SPRITE_BASE_ADDR + 64);
@@ -55,13 +75,26 @@ typedef struct
     bool show;
 } Player;
 
+typedef struct {
+    short int x;
+    short int y;
+} Position;
+
+Position startPositions[3] = {
+    {10 + LEFT_BORDER, 10 + TOP_BORDER},
+    {25 + LEFT_BORDER, 40 + TOP_BORDER},
+    {75 + LEFT_BORDER, 75 + TOP_BORDER}
+};
+
+int positionIndex = 0;
+
 Player Blueberry;
 Player Banana;
 Player Apple;
 Player Basket = {
     .sp = 3,
-    .xpos = 50,
-    .ypos = 100,
+    .xpos = 125,
+    .ypos = 155,
     .xVel = 0,
     .yVel = 0,
     .color = 12,
@@ -78,12 +111,54 @@ inline byte peek(unsigned addr)
 	return *(volatile char *)addr;
 }
 
+typedef struct {
+    bool xCollision;
+    bool yCollision;
+} CollisionResult;
+
+CollisionResult checkForegroundCollision(Player *sprite) {
+    CollisionResult result = { false, false };
+
+    int left = sprite->xpos / 8;
+    int right = (sprite->xpos + SPRITE_WIDTH - 1) / 8;
+    int top = sprite->ypos / 8;
+    int bottom = (sprite->ypos + SPRITE_HEIGHT - 1) / 8;
+
+    for (int row = top; row <= bottom; row++) {
+        for (int col = left; col <= right; col++) {
+            if (col >= 40 || row >= 25) continue;
+
+            byte ch = SCREEN_RAM[row * 40 + col];
+            if (ch != 32) {
+                // Basic assumption: horizontal collision if moving horizontally, same for vertical
+                if (sprite->xVel != 0) result.xCollision = true;
+                if (sprite->yVel != 0) result.yCollision = true;
+                return result;  // Exit early for speed
+            }
+        }
+    }
+    return result;
+}
+
+void shuffleStartPositions() {
+    for (int i = 2; i > 0; i--) {
+        int j = rand() % (i + 1);
+        Position temp = startPositions[i];
+        startPositions[i] = startPositions[j];
+        startPositions[j] = temp;
+    }
+}
+
 inline void initsprite(Player *p, int no, char color) {
+    if (positionIndex >= 3) return;  // safety check
+
     p->sp    = no;
-    p->xpos  = 50 + ((short int)rand() % (300 - 50 + 1));    // 50 to 300
-    p->ypos  = 75 + ((short int)rand() % (200 - 75 + 1));    // 75 to 200
-    p->xVel  = ((short int)rand() % 2 == 0) ? 2 : -2;        // +2 or -2
-    p->yVel  = ((short int)rand() % 2 == 0) ? 2 : -2;        // +2 or -2
+    p->xpos  = startPositions[positionIndex].x;
+    p->ypos  = startPositions[positionIndex].y;
+    positionIndex++;
+
+    p->xVel  = 2;
+    p->yVel  = ((short int)rand() % 2 == 0) ? 2 : -2;
     p->color = color;
     p->show  = true;
 }
@@ -101,18 +176,58 @@ inline void updatesprite(Player *p) {
 
     if (p->xpos <= LEFT_BORDER || p->xpos >= RIGHT_BORDER) {
         p->xVel = -p->xVel;
-        if (p->xpos < LEFT_BORDER) p->xpos = LEFT_BORDER;
-        if (p->xpos > RIGHT_BORDER) p->xpos = RIGHT_BORDER;
+        p->xpos = MAX(LEFT_BORDER, MIN(p->xpos, RIGHT_BORDER));
     }
 
     if (p->ypos <= TOP_BORDER || p->ypos >= BOTTOM_BORDER) {
         p->yVel = -p->yVel;
-        if (p->ypos < TOP_BORDER) p->ypos = TOP_BORDER;
-        if (p->ypos > BOTTOM_BORDER) p->ypos = BOTTOM_BORDER;
+        p->ypos = MAX(TOP_BORDER, MIN(p->ypos, BOTTOM_BORDER));
     }
 
+CollisionResult collision = checkForegroundCollision(p);
+if (collision.xCollision) p->xVel = -p->xVel;
+if (collision.yCollision) p->yVel = -p->yVel;
 
     spr_move(p->sp, p->xpos, p->ypos);
+}
+
+bool isSpritePixelSet(const char *sprite, int x, int y) {
+    if (x < 0 || x >= 24 || y < 0 || y >= 21) return false;
+
+    int byteIndex = y * 3 + x / 8;
+    int bit = 7 - (x % 8);
+    return (sprite[byteIndex] >> bit) & 1;
+}
+
+bool pixelPerfectCollision(Player *a, Player *b) {
+
+    const char *aSpriteData = spriteImages[a->sp];
+    const char *bSpriteData = spriteImages[b->sp];
+
+    int x_overlap_start = MAX(a->xpos, b->xpos);
+    int x_overlap_end   = MIN(a->xpos + SPRITE_WIDTH, b->xpos + SPRITE_WIDTH);
+    int y_overlap_start = MAX(a->ypos, b->ypos);
+    int y_overlap_end   = MIN(a->ypos + SPRITE_HEIGHT, b->ypos + SPRITE_HEIGHT);
+
+    if (x_overlap_start >= x_overlap_end || y_overlap_start >= y_overlap_end)
+        return false;
+
+    // Loop over overlapping pixels
+    for (int y = y_overlap_start; y < y_overlap_end; y++) {
+        for (int x = x_overlap_start; x < x_overlap_end; x++) {
+            int a_x = x - a->xpos;
+            int a_y = y - a->ypos;
+            int b_x = x - b->xpos;
+            int b_y = y - b->ypos;
+
+            if (isSpritePixelSet(aSpriteData, a_x, a_y) &&
+                isSpritePixelSet(bSpriteData, b_x, b_y)) {
+                return true; // Collision!
+            }
+        }
+    }
+
+    return false;
 }
 
 inline bool isColliding(Player *a, Player *b) {
@@ -122,8 +237,9 @@ inline bool isColliding(Player *a, Player *b) {
              a->ypos > b->ypos + SPRITE_HEIGHT);
 }
 
+
 void handleCollision(Player *p1, Player *p2) {
-    if (isColliding(p1, p2)) {
+    if (pixelPerfectCollision(p1, p2)) {
         p1->xVel = -p1->xVel;
         p1->yVel = -p1->yVel;
         p2->xVel = -p2->xVel;
@@ -131,7 +247,7 @@ void handleCollision(Player *p1, Player *p2) {
     }
 }
 
-void handleBasketCollision(Player *p1, Player *basket) {
+bool handleBasketCollision(Player *p1, Player *basket) {
     if (isColliding(p1, basket)) {
         spr_show(p1->sp, false);
         p1->xVel = 0;
@@ -139,10 +255,24 @@ void handleBasketCollision(Player *p1, Player *basket) {
         p1->xpos = basket->xpos;
         p1->ypos = basket->ypos;
         spr_move(p1->sp, p1->xpos, p1->ypos);
+        for (int i = 0; i < 3; i++) {
+            if (spriteOrder[i] == 255) {
+                spriteOrder[i] = p1->sp;
+                if (i == 2) {
+                    return true;
+                }
+                break;
+            }
+        }
     }
+    return false;
 }
 
 inline void gameloop() {
+    poke(53281, 0);
+    poke(53280, 12);
+    poke(646,1);
+    draw_map1();
     initsprite(&Blueberry, 0, 4);
     makesprite(&Blueberry, spr1Img, SpriteMem1);
     initsprite(&Banana, 1, 7);
@@ -151,8 +281,8 @@ inline void gameloop() {
     makesprite(&Apple, spr3Img, SpriteMem3);
     makesprite(&Basket, spr4Img, SpriteMem4);
 
-
-    while (true) {        
+    bool gameOver = false;
+    while (!gameOver) {        
         updatesprite(&Blueberry);
         updatesprite(&Banana);
         updatesprite(&Apple);
@@ -161,9 +291,9 @@ inline void gameloop() {
         handleCollision(&Blueberry, &Apple);
         handleCollision(&Banana, &Apple);
 
-        handleBasketCollision(&Blueberry, &Basket);
-        handleBasketCollision(&Banana, &Basket);
-        handleBasketCollision(&Apple, &Basket);
+        if (handleBasketCollision(&Blueberry, &Basket)) gameOver = true;
+        if (handleBasketCollision(&Banana, &Basket)) gameOver = true;
+        if (handleBasketCollision(&Apple, &Basket)) gameOver = true;
 
         vic_waitFrame();
     }
