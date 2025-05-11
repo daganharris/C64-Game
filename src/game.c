@@ -29,10 +29,41 @@
 #define CHAR_WIDTH 8
 #define CHAR_HEIGHT 8
 
+#define MAP_COLS 40
+#define MAP_ROWS 25
+
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 char spriteOrder[3] = {255,255,255};
+
+const char map_screen[] = {  79,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,116, 32, 32, 32, 32, 79,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119, 80,
+116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 76,111, 32, 32, 32,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,111,111,111,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 79,
+116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,111,101,
+116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,101, 32,
+116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,101, 32,
+116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,101, 32,
+ 76,111,111, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 63, 63, 63, 63, 63, 63, 32, 32, 32, 32, 32, 32, 76,111,
+ 23,  9,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 63, 23,  8, 15, 32, 63, 32, 32, 32, 32, 32, 32, 32,103,
+  9, 23,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 63, 23,  9, 12, 12, 63, 32, 32, 32, 32, 32, 32, 32,103,
+ 14,  9, 79,119,119,119,119,119,119,119,119,119,119, 80, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 63, 23,  9, 14, 32, 63, 32, 32, 32, 32, 32, 32, 32,103,
+ 23, 14,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 63, 63, 63, 63, 63, 63, 32, 32, 32, 32, 32, 32, 32,103,
+  9, 23,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+ 14,  9,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+ 23, 14,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+  9, 23,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+ 14,  9,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+ 23, 14,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+  9, 23,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+ 14,  9,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
+ 23, 14,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 85, 73, 32, 32, 85, 73, 32, 32,111,111,122,
+  9, 23,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,109,125,127,255,109,125, 32, 32,116, 32, 32,
+ 14,  9, 76,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,116, 32, 32
+
+};
 
 const char spr1Img[64] = {
     0,24,0,3,59,128,7,101,224,15,125,224,31,131,248,31,255,252,63,255,254,63,255,254,120,126,30,123,126,222,251,126,223,251,126,223,248,126,26,255,255,242,127,255,228,63,255,204,63,255,216,31,255,144,15,255,48,3,255,192,0,126,0
@@ -83,7 +114,7 @@ typedef struct {
 Position startPositions[3] = {
     {10 + LEFT_BORDER, 10 + TOP_BORDER},
     {25 + LEFT_BORDER, 40 + TOP_BORDER},
-    {75 + LEFT_BORDER, 75 + TOP_BORDER}
+    {75 + LEFT_BORDER, 50 + TOP_BORDER}
 };
 
 int positionIndex = 0;
@@ -93,7 +124,7 @@ Player Banana;
 Player Apple;
 Player Basket = {
     .sp = 3,
-    .xpos = 125,
+    .xpos = 100,
     .ypos = 155,
     .xVel = 0,
     .yVel = 0,
@@ -169,25 +200,73 @@ inline void makesprite(Player *p, const char *sprImg, const char *SpriteMem) {
 
     spr_set(p->sp, p->show, p->xpos, p->ypos, (unsigned)SpriteMem / 64, p->color, false, false, false);
 }
+static bool mapPixelSolid(int x, int y) {
+    if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT)
+        return true;  // offscreen counts as solid
+
+    int col = x / CHAR_WIDTH;
+    int row = y / CHAR_HEIGHT;
+    int index = row * MAP_COLS + col;
+    char tile = map_screen[index];
+    if (tile == 32) return false;
+
+    // get the 8‐byte bitmap for that tile:
+    byte *char_data = (byte*)CHARSET_RAM + tile * CHAR_HEIGHT;
+    int py = y % CHAR_HEIGHT;
+    int px = x % CHAR_WIDTH;
+    byte bits = char_data[py];
+    return (bits >> (7 - px)) & 1;
+}
+
+// Test collision along X: we advance xpos by vx and then sample two vertical edge points
+static bool collidesX(Player *p) {
+    int newX = p->xpos + p->xVel;
+    int topY = p->ypos;
+    int botY = p->ypos + SPRITE_HEIGHT - 1;
+    // left edge
+    if (mapPixelSolid(newX,     topY) || 
+        mapPixelSolid(newX,     botY)) return true;
+    // right edge
+    if (mapPixelSolid(newX + SPRITE_WIDTH - 1, topY) ||
+        mapPixelSolid(newX + SPRITE_WIDTH - 1, botY)) return true;
+    return false;
+}
+
+// Test collision along Y: advance ypos by vy and sample two horizontal edge points
+static bool collidesY(Player *p) {
+    int newY = p->ypos + p->yVel;
+    int leftX  = p->xpos;
+    int rightX = p->xpos + SPRITE_WIDTH - 1;
+    // top edge
+    if (mapPixelSolid(leftX,      newY) ||
+        mapPixelSolid(rightX,     newY)) return true;
+    // bottom edge
+    if (mapPixelSolid(leftX,      newY + SPRITE_HEIGHT - 1) ||
+        mapPixelSolid(rightX,     newY + SPRITE_HEIGHT - 1)) return true;
+    return false;
+}
 
 inline void updatesprite(Player *p) {
+    int prevX = p->xpos;
+    int prevY = p->ypos;
+
+    // 1) Move X
     p->xpos += p->xVel;
+    // 2) Test X only
+    if (collidesX(p)) {
+        p->xpos = prevX;      // revert
+        p->xVel = -p->xVel;   // bounce
+    }
+
+    // 3) Move Y
     p->ypos += p->yVel;
-
-    if (p->xpos <= LEFT_BORDER || p->xpos >= RIGHT_BORDER) {
-        p->xVel = -p->xVel;
-        p->xpos = MAX(LEFT_BORDER, MIN(p->xpos, RIGHT_BORDER));
+    // 4) Test Y only
+    if (collidesY(p)) {
+        p->ypos = prevY;      // revert
+        p->yVel = -p->yVel;   // bounce
     }
 
-    if (p->ypos <= TOP_BORDER || p->ypos >= BOTTOM_BORDER) {
-        p->yVel = -p->yVel;
-        p->ypos = MAX(TOP_BORDER, MIN(p->ypos, BOTTOM_BORDER));
-    }
-
-CollisionResult collision = checkForegroundCollision(p);
-if (collision.xCollision) p->xVel = -p->xVel;
-if (collision.yCollision) p->yVel = -p->yVel;
-
+    // 5) Finally, update hardware
     spr_move(p->sp, p->xpos, p->ypos);
 }
 
@@ -271,7 +350,6 @@ bool handleBasketCollision(Player *p1, Player *basket) {
 inline void gameloop() {
     poke(53281, 0);
     poke(53280, 12);
-    poke(646,1);
     draw_map1();
     initsprite(&Blueberry, 0, 4);
     makesprite(&Blueberry, spr1Img, SpriteMem1);
