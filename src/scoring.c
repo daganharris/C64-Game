@@ -1,52 +1,73 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <include/c64/types.h>
 
-// Ararys are synced
-int scores[10];
-char initials[10][4];
+typedef struct ScoreEntry{
+    char initials[4];
+    int score;
+} ScoreEntry;
 
-void copy_str(char *dest, char *src, int max_len) {
-    int j = 0;
-    while (j < max_len - 1 && src[j] != '\0') {
-        dest[j] = src[j];
-        j++;
+ScoreEntry entries[10];
+int score_count = 0;
+
+byte * const Screen = (byte*)0x0400;
+
+void write_char(int x, int y, char c) {
+    Screen[40 * y + x] = c;
+}
+
+void draw_scores() {
+    for (int i = 0; i < 10; i++) {
+        // Draw initials
+        for (int j = 0; j < 3; j++) {
+            if (entries[i].initials[j] != '\0') {
+                write_char(j + 4, (i * 2) + 4, entries[i].initials[j]);
+            }
+        }
+
+        // Draw score (only 3 digits max)
+        int score = entries[i].score;
+        int digits[3]; // Only 3 digits max
+        int num_digits = 0;
+
+        if (score == 0) {
+            digits[num_digits++] = 0; // Handle score 0
+        } else {
+            while (score > 0 && num_digits < 3) {
+                digits[num_digits++] = score % 10;
+                score /= 10;
+            }
+        }
+
+        // Write digits, starting at column 8
+        for (int d = 0; d < num_digits; d++) {
+            write_char(8 + (2 - d), (i * 2) + 4, digits[d] + 0x30);
+        }
     }
-    dest[j] = '\0';
 }
 
 void add_score(const char *newInitials, int score) {
-    byte min_score_pos = get_min_score_pos();
-    if (min_score_pos < 9) {
-        min_score_pos++;
-    }
-    copy_str(initials[min_score_pos], newInitials, 4);
-    scores[min_score_pos] = score;
-}
+    int pos = score_count;
 
-void draw_scores(){
-    // TODO: get positions within table. validate 
-}
-
-int get_min_score_pos(){
-    byte pos = 9;
-    while (scores[pos] == 0 || pos != 0){
+    // Find insert position
+    while (pos > 0 && score > entries[pos - 1].score) {
+        if (pos < 10) entries[pos] = entries[pos - 1];
         pos--;
     }
-    return pos;
-}
 
-void sort_scores() {
-    for (int i = 0; i < 9; ++i) {
-        for (int j = i + 1; j < 9; ++j) {
-            if (scores[i] < scores[j]) {
-                int temp_score = scores[i];
-                scores[i] = scores[j];
-                scores[j] = temp_score;
-                char temp_initials[4];
-                copy_str(temp_initials, initials[i], 4);
-                copy_str(initials[i], initials[j], 4);
-                copy_str(initials[j], temp_initials, 4);
-            }
-        }
+    // Insert if not full yet
+    if (score_count < 10) {
+        score_count++;
     }
+    // Otherwise, ignore if new score is worse than all
+    else if (score <= entries[9].score) {
+        return;
+    }
+
+    // Insert new score
+    for (int i = 0; i < 3 && newInitials[i] != '\0'; ++i) {
+        entries[pos].initials[i] = newInitials[i];
+    }
+    entries[pos].initials[3] = '\0';
+    entries[pos].score = score;
 }

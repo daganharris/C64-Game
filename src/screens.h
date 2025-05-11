@@ -3,6 +3,7 @@
 
 void countdown_sequence();
 void draw_map1();
+void draw_start1();
 
 #pragma compile("screens.c")
 
