@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <include/c64/types.h>
+#include "game.h"
+#include "screens.h"
 
 typedef struct ScoreEntry{
     char initials[4];
@@ -12,8 +14,6 @@ const int point_values[] = {50, 25, 0};
 
 ScoreEntry entries[10];
 int score_count = 0;
-
-byte * const Screen = (byte*)0x0400;
 
 void write_char(int x, int y, char c) {
     Screen[40 * y + x] = c;
@@ -73,4 +73,11 @@ void add_score(const char *newInitials, int score) {
     }
     entries[pos].initials[3] = '\0';
     entries[pos].score = score;
+}
+
+void enter_initials(){
+    int x = 9;
+    int y = 12;
+    draw_initials();
+    
 }
