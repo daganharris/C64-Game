@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdint.h>
+#include <include/stdint.h>
 #include <include/c64/types.h>
 #include "game.h"
 #include "screens.h"
@@ -9,14 +9,15 @@ typedef struct ScoreEntry{
     int score;
 } ScoreEntry;
 
-const int point_values[] = {50, 25, 0};
-// Blueberry = 0, Apple = 1, Banana = 2
-
 ScoreEntry entries[10];
 int score_count = 0;
 
 void write_char(int x, int y, char c) {
     Screen[40 * y + x] = c;
+}
+
+char read_char(int x, int y) {
+    return Screen[40 * y + x];
 }
 
 void draw_scores() {
@@ -75,9 +76,27 @@ void add_score(const char *newInitials, int score) {
     entries[pos].score = score;
 }
 
-void enter_initials(){
+char * enter_initials(){
     int x = 9;
     int y = 12;
+    char c = 0;
+    static char temp_initials[4];
     draw_initials();
     
+    gets_s(temp_initials,4);
+    return temp_initials;
+}
+
+const int point_values[] = {50, 25, 0};
+// Blueberry = 0, Apple = 1, Banana = 2
+
+int race_score(byte bet, byte * order) {
+    int points = 0;
+    if (order[0] == bet) {
+        points = 50;
+    }
+    if (order[1] == bet) {
+        points = 25;
+    }
+    return points;
 }
