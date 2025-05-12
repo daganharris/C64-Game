@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <conio.h>
 #include <include/stdint.h>
 #include <include/c64/types.h>
 #include "game.h"
@@ -79,10 +80,9 @@ void add_score(const char *newInitials, int score) {
 char * enter_initials(){
     int x = 9;
     int y = 12;
-    char c = 0;
     static char temp_initials[4];
     draw_initials();
-    
+    gotoxy(x, y);
     gets_s(temp_initials,4);
     return temp_initials;
 }

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <conio.h>
 #include <include/c64/vic.h>
 #include <include/c64/memmap.h>
 #include "scoring.h"
@@ -300,13 +301,11 @@ void draw_map1(){
 byte draw_play_again(int score){
 	draw_screen(play_again_screen);
 	while (1){
-		char c = getchar();
+		char c = getch();
 		switch (c){
 			case 89: // Y
 				return 1;
 			case 78: // N
-				putchar(c);
-				vic_waitFrames(1000);
 				return 0;
 			default:
 				draw_screen(play_again_screen);

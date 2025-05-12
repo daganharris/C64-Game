@@ -26,7 +26,7 @@ int main(void)
         countdown_sequence();
 
         while (flag){
-	        gameloop();
+	        // gameloop();
             temp_score += race_score(temp_bet, temp_order);
             flag = draw_play_again(temp_score);
         }
