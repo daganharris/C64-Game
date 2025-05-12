@@ -90,10 +90,6 @@ char * const SpriteMem1 = (char *)(SPRITE_BASE_ADDR + 0);
 char * const SpriteMem2 = (char *)(SPRITE_BASE_ADDR + 64);
 char * const SpriteMem3 = (char *)(SPRITE_BASE_ADDR + 128);
 char * const SpriteMem4 = (char *)(SPRITE_BASE_ADDR + 192);
-// char * const SpriteMem5 = (char *)(SPRITE_BASE_ADDR + 256);
-// char * const SpriteMem6 = (char *)(SPRITE_BASE_ADDR + 320);
-// char * const SpriteMem7 = (char *)(SPRITE_BASE_ADDR + 384);
-// char * const SpriteMem8 = (char *)(SPRITE_BASE_ADDR + 448);
 
 typedef struct 
 {
@@ -142,35 +138,6 @@ inline byte peek(unsigned addr)
 	return *(volatile char *)addr;
 }
 
-typedef struct {
-    bool xCollision;
-    bool yCollision;
-} CollisionResult;
-
-CollisionResult checkForegroundCollision(Player *sprite) {
-    CollisionResult result = { false, false };
-
-    int left = sprite->xpos / 8;
-    int right = (sprite->xpos + SPRITE_WIDTH - 1) / 8;
-    int top = sprite->ypos / 8;
-    int bottom = (sprite->ypos + SPRITE_HEIGHT - 1) / 8;
-
-    for (int row = top; row <= bottom; row++) {
-        for (int col = left; col <= right; col++) {
-            if (col >= 40 || row >= 25) continue;
-
-            byte ch = SCREEN_RAM[row * 40 + col];
-            if (ch != 32) {
-                // Basic assumption: horizontal collision if moving horizontally, same for vertical
-                if (sprite->xVel != 0) result.xCollision = true;
-                if (sprite->yVel != 0) result.yCollision = true;
-                return result;  // Exit early for speed
-            }
-        }
-    }
-    return result;
-}
-
 void shuffleStartPositions() {
     for (int i = 2; i > 0; i--) {
         int j = rand() % (i + 1);
@@ -200,113 +167,58 @@ inline void makesprite(Player *p, const char *sprImg, const char *SpriteMem) {
 
     spr_set(p->sp, p->show, p->xpos, p->ypos, (unsigned)SpriteMem / 64, p->color, false, false, false);
 }
-static bool mapPixelSolid(int x, int y) {
-    if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT)
-        return true;  // offscreen counts as solid
 
-    int col = x / CHAR_WIDTH;
-    int row = y / CHAR_HEIGHT;
-    int index = row * MAP_COLS + col;
-    char tile = map_screen[index];
-    if (tile == 32) return false;
+// Add checkCollision function before updatesprite
+bool checkCollision(Player *p) {
+    int left = p->xpos - LEFT_BORDER;
+    int top = p->ypos - TOP_BORDER;
+    int right = left + SPRITE_WIDTH;
+    int bottom = top + SPRITE_HEIGHT;
 
-    // get the 8‐byte bitmap for that tile:
-    byte *char_data = (byte*)CHARSET_RAM + tile * CHAR_HEIGHT;
-    int py = y % CHAR_HEIGHT;
-    int px = x % CHAR_WIDTH;
-    byte bits = char_data[py];
-    return (bits >> (7 - px)) & 1;
-}
+    // Convert to map columns and rows
+    int left_col = left / CHAR_WIDTH;
+    int right_col = (right - 1) / CHAR_WIDTH; // Adjust to avoid overflow
+    int top_row = top / CHAR_HEIGHT;
+    int bottom_row = (bottom - 1) / CHAR_HEIGHT;
 
-// Test collision along X: we advance xpos by vx and then sample two vertical edge points
-static bool collidesX(Player *p) {
-    int newX = p->xpos + p->xVel;
-    int topY = p->ypos;
-    int botY = p->ypos + SPRITE_HEIGHT - 1;
-    // left edge
-    if (mapPixelSolid(newX,     topY) || 
-        mapPixelSolid(newX,     botY)) return true;
-    // right edge
-    if (mapPixelSolid(newX + SPRITE_WIDTH - 1, topY) ||
-        mapPixelSolid(newX + SPRITE_WIDTH - 1, botY)) return true;
-    return false;
-}
+    // Clamp values to map boundaries
+    if (left_col < 0) left_col = 0;
+    if (right_col >= MAP_COLS) right_col = MAP_COLS - 1;
+    if (top_row < 0) top_row = 0;
+    if (bottom_row >= MAP_ROWS) bottom_row = MAP_ROWS - 1;
 
-// Test collision along Y: advance ypos by vy and sample two horizontal edge points
-static bool collidesY(Player *p) {
-    int newY = p->ypos + p->yVel;
-    int leftX  = p->xpos;
-    int rightX = p->xpos + SPRITE_WIDTH - 1;
-    // top edge
-    if (mapPixelSolid(leftX,      newY) ||
-        mapPixelSolid(rightX,     newY)) return true;
-    // bottom edge
-    if (mapPixelSolid(leftX,      newY + SPRITE_HEIGHT - 1) ||
-        mapPixelSolid(rightX,     newY + SPRITE_HEIGHT - 1)) return true;
-    return false;
-}
-
-inline void updatesprite(Player *p) {
-    int prevX = p->xpos;
-    int prevY = p->ypos;
-
-    // 1) Move X
-    p->xpos += p->xVel;
-    // 2) Test X only
-    if (collidesX(p)) {
-        p->xpos = prevX;      // revert
-        p->xVel = -p->xVel;   // bounce
-    }
-
-    // 3) Move Y
-    p->ypos += p->yVel;
-    // 4) Test Y only
-    if (collidesY(p)) {
-        p->ypos = prevY;      // revert
-        p->yVel = -p->yVel;   // bounce
-    }
-
-    // 5) Finally, update hardware
-    spr_move(p->sp, p->xpos, p->ypos);
-}
-
-bool isSpritePixelSet(const char *sprite, int x, int y) {
-    if (x < 0 || x >= 24 || y < 0 || y >= 21) return false;
-
-    int byteIndex = y * 3 + x / 8;
-    int bit = 7 - (x % 8);
-    return (sprite[byteIndex] >> bit) & 1;
-}
-
-bool pixelPerfectCollision(Player *a, Player *b) {
-
-    const char *aSpriteData = spriteImages[a->sp];
-    const char *bSpriteData = spriteImages[b->sp];
-
-    int x_overlap_start = MAX(a->xpos, b->xpos);
-    int x_overlap_end   = MIN(a->xpos + SPRITE_WIDTH, b->xpos + SPRITE_WIDTH);
-    int y_overlap_start = MAX(a->ypos, b->ypos);
-    int y_overlap_end   = MIN(a->ypos + SPRITE_HEIGHT, b->ypos + SPRITE_HEIGHT);
-
-    if (x_overlap_start >= x_overlap_end || y_overlap_start >= y_overlap_end)
-        return false;
-
-    // Loop over overlapping pixels
-    for (int y = y_overlap_start; y < y_overlap_end; y++) {
-        for (int x = x_overlap_start; x < x_overlap_end; x++) {
-            int a_x = x - a->xpos;
-            int a_y = y - a->ypos;
-            int b_x = x - b->xpos;
-            int b_y = y - b->ypos;
-
-            if (isSpritePixelSet(aSpriteData, a_x, a_y) &&
-                isSpritePixelSet(bSpriteData, b_x, b_y)) {
-                return true; // Collision!
+    // Check each tile in the sprite's area
+    for (int row = top_row; row <= bottom_row; row++) {
+        for (int col = left_col; col <= right_col; col++) {
+            char tile = map_screen[row * MAP_COLS + col];
+            if (tile != 32) { // 32 is empty space
+                return true; // Collision detected
             }
         }
     }
+    return false; // No collision
+}
 
-    return false;
+// Modify updatesprite to handle collisions
+inline void updatesprite(Player *p) {
+    int oldX = p->xpos;
+    int oldY = p->ypos;
+
+    // Move in X direction and check collision
+    p->xpos += p->xVel;
+    if (checkCollision(p)) {
+        p->xpos = oldX;
+        p->xVel = -p->xVel;
+    }
+
+    // Move in Y direction and check collision
+    p->ypos += p->yVel;
+    if (checkCollision(p)) {
+        p->ypos = oldY;
+        p->yVel = -p->yVel;
+    }
+
+    spr_move(p->sp, p->xpos, p->ypos);
 }
 
 inline bool isColliding(Player *a, Player *b) {
@@ -316,15 +228,6 @@ inline bool isColliding(Player *a, Player *b) {
              a->ypos > b->ypos + SPRITE_HEIGHT);
 }
 
-
-void handleCollision(Player *p1, Player *p2) {
-    if (pixelPerfectCollision(p1, p2)) {
-        p1->xVel = -p1->xVel;
-        p1->yVel = -p1->yVel;
-        p2->xVel = -p2->xVel;
-        p2->yVel = -p2->yVel;
-    }
-}
 
 bool handleBasketCollision(Player *p1, Player *basket) {
     if (isColliding(p1, basket)) {
@@ -365,9 +268,6 @@ inline void gameloop() {
         updatesprite(&Banana);
         updatesprite(&Apple);
 
-        handleCollision(&Blueberry, &Banana);
-        handleCollision(&Blueberry, &Apple);
-        handleCollision(&Banana, &Apple);
 
         if (handleBasketCollision(&Blueberry, &Basket)) gameOver = true;
         if (handleBasketCollision(&Banana, &Basket)) gameOver = true;
