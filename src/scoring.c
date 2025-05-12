@@ -7,6 +7,9 @@ typedef struct ScoreEntry{
     int score;
 } ScoreEntry;
 
+const int point_values[] = {50, 25, 0};
+// Blueberry = 0, Apple = 1, Banana = 2
+
 ScoreEntry entries[10];
 int score_count = 0;
 
