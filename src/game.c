@@ -37,7 +37,8 @@
 
 char spriteOrder[3] = {255,255,255};
 
-const char map_screen[] = {  79,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,116, 32, 32, 32, 32, 79,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119, 80,
+const char map_screen[] = {  
+79,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,116, 32, 32, 32, 32, 79,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119, 80,
 116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 76,111, 32, 32, 32,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
 116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,111,111,111,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
 116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
@@ -60,7 +61,7 @@ const char map_screen[] = {  79,119,119,119,119,119,119,119,119,119,119,119,119,
   9, 23,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
  14,  9,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,103,
  23, 14,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 85, 73, 32, 32, 85, 73, 32, 32,111,111,122,
-  9, 23,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,109,125,127,255,109,125, 32, 32,116, 32, 32,
+  9, 23,116, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,109,125,127,255,109,125, 32,116, 32, 32,
  14,  9, 76,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,116, 32, 32
 
 };
@@ -170,6 +171,10 @@ inline void makesprite(Player *p, const char *sprImg, const char *SpriteMem) {
 
 // Add checkCollision function before updatesprite
 bool checkCollision(Player *p) {
+    // Only check collisions for moving sprites (not the basket)
+    if (p->xVel == 0 && p->yVel == 0) return false;
+
+    // Convert sprite position to map-relative coordinates
     int left = p->xpos - LEFT_BORDER;
     int top = p->ypos - TOP_BORDER;
     int right = left + SPRITE_WIDTH;
@@ -182,17 +187,22 @@ bool checkCollision(Player *p) {
     int bottom_row = (bottom - 1) / CHAR_HEIGHT;
 
     // Clamp values to map boundaries
-    if (left_col < 0) left_col = 0;
-    if (right_col >= MAP_COLS) right_col = MAP_COLS - 1;
-    if (top_row < 0) top_row = 0;
-    if (bottom_row >= MAP_ROWS) bottom_row = MAP_ROWS - 1;
+    left_col = MAX(0, MIN(left_col, MAP_COLS - 1));
+    right_col = MAX(0, MIN(right_col, MAP_COLS - 1));
+    top_row = MAX(0, MIN(top_row, MAP_ROWS - 1));
+    bottom_row = MAX(0, MIN(bottom_row, MAP_ROWS - 1));
 
     // Check each tile in the sprite's area
     for (int row = top_row; row <= bottom_row; row++) {
         for (int col = left_col; col <= right_col; col++) {
-            char tile = map_screen[row * MAP_COLS + col];
-            if (tile != 32) { // 32 is empty space
-                return true; // Collision detected
+            // Make sure we're within map bounds
+            if (row >= 0 && row < MAP_ROWS && col >= 0 && col < MAP_COLS) {
+                char tile = map_screen[row * MAP_COLS + col];
+                // Only consider certain tiles as collision obstacles
+                // Typically walls, borders, etc. (values other than 32 which is space)
+                if (tile != 32) { 
+                    return true; // Collision detected
+                }
             }
         }
     }
@@ -282,13 +292,16 @@ inline char* gameloop() {
     poke(646,1);
     draw_map1();
 
+    makesprite(&Basket, spr4Img, SpriteMem4);
+    vic_waitFrame();
+
     initsprite(&Blueberry, 0, 4);
     makesprite(&Blueberry, spr1Img, SpriteMem1);
     initsprite(&Banana, 1, 7);
     makesprite(&Banana, spr2Img, SpriteMem2);
     initsprite(&Apple, 2, 5);
     makesprite(&Apple, spr3Img, SpriteMem3);
-    makesprite(&Basket, spr4Img, SpriteMem4);
+
 
     bool gameOver = false;
     while (!gameOver) {        
