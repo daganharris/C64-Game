@@ -150,15 +150,15 @@ void shuffleStartPositions() {
 inline void initsprite(Player *p, int no, char color) {
     if (positionIndex >= 3) return;  // safety check
 
-    p->sp    = no;
-    p->xpos  = startPositions[positionIndex].x;
-    p->ypos  = startPositions[positionIndex].y;
+    p->sp = no;
+    p->xpos = startPositions[positionIndex].x;
+    p->ypos = startPositions[positionIndex].y;
     positionIndex++;
 
-    p->xVel  = 2;
-    p->yVel  = ((short int)rand() % 2 == 0) ? 2 : -2;
-    p->color = color;
-    p->show  = true;
+    p->xVel = 2;
+    p->yVel = ((short int)rand() % 2 == 0) ? 2 : -2;
+    p->color= color;
+    p->show = true;
 }
 
 inline void makesprite(Player *p, const char *sprImg, const char *SpriteMem) {
@@ -228,6 +228,45 @@ inline bool isColliding(Player *a, Player *b) {
              a->ypos > b->ypos + SPRITE_HEIGHT);
 }
 
+bool pixelPerfectCollision(Player *a, Player *b) {
+
+    const char *aSpriteData = spriteImages[a->sp];
+    const char *bSpriteData = spriteImages[b->sp];
+
+    int x_overlap_start = MAX(a->xpos, b->xpos);
+    int x_overlap_end   = MIN(a->xpos + SPRITE_WIDTH, b->xpos + SPRITE_WIDTH);
+    int y_overlap_start = MAX(a->ypos, b->ypos);
+    int y_overlap_end   = MIN(a->ypos + SPRITE_HEIGHT, b->ypos + SPRITE_HEIGHT);
+
+    if (x_overlap_start >= x_overlap_end || y_overlap_start >= y_overlap_end)
+        return false;
+
+    // Loop over overlapping pixels
+    for (int y = y_overlap_start; y < y_overlap_end; y++) {
+        for (int x = x_overlap_start; x < x_overlap_end; x++) {
+            int a_x = x - a->xpos;
+            int a_y = y - a->ypos;
+            int b_x = x - b->xpos;
+            int b_y = y - b->ypos;
+
+            if (isSpritePixelSet(aSpriteData, a_x, a_y) &&
+                isSpritePixelSet(bSpriteData, b_x, b_y)) {
+                return true; // Collision!
+            }
+        }
+    }
+
+    return false;
+}
+
+void handleCollision(Player *p1, Player *p2) {
+    if (pixelPerfectCollision(p1, p2)) {
+        p1->xVel = -p1->xVel;
+        p1->yVel = -p1->yVel;
+        p2->xVel = -p2->xVel;
+        p2->yVel = -p2->yVel;
+    }
+}
 
 bool handleBasketCollision(Player *p1, Player *basket) {
     if (isColliding(p1, basket)) {
@@ -237,13 +276,16 @@ bool handleBasketCollision(Player *p1, Player *basket) {
         p1->xpos = basket->xpos;
         p1->ypos = basket->ypos;
         spr_move(p1->sp, p1->xpos, p1->ypos);
+        
+        // Find the first empty slot in the spriteOrder array
         for (int i = 0; i < 3; i++) {
-            if (spriteOrder[i] == 255) {
-                spriteOrder[i] = p1->sp;
+            if (spriteOrder[i] == 255) {  
+                spriteOrder[i] = p1->sp;  
+                    
                 if (i == 2) {
                     return true;
                 }
-                break;
+                break;  
             }
         }
     }
@@ -253,7 +295,9 @@ bool handleBasketCollision(Player *p1, Player *basket) {
 inline void gameloop() {
     poke(53281, 0);
     poke(53280, 12);
+    poke(646,1);
     draw_map1();
+
     initsprite(&Blueberry, 0, 4);
     makesprite(&Blueberry, spr1Img, SpriteMem1);
     initsprite(&Banana, 1, 7);
@@ -268,6 +312,9 @@ inline void gameloop() {
         updatesprite(&Banana);
         updatesprite(&Apple);
 
+        handleCollision(&Blueberry, &Banana);
+        handleCollision(&Blueberry, &Apple);
+        handleCollision(&Banana, &Apple);
 
         if (handleBasketCollision(&Blueberry, &Basket)) gameOver = true;
         if (handleBasketCollision(&Banana, &Basket)) gameOver = true;
