@@ -17,7 +17,7 @@ int main(void)
     while (1) {
         byte flag = 1;
         int temp_score = 0;
-        byte temp_order[3] = {0, 1, 2};
+        byte spriteOrder[3];
         // Blueberry = 0, Apple = 1, Banana = 2
         byte temp_bet = 0;
 
@@ -26,8 +26,8 @@ int main(void)
         countdown_sequence();
 
         while (flag){
-	        // gameloop();
-            temp_score += race_score(temp_bet, temp_order);
+	        spriteOrder = gameloop();
+            temp_score += race_score(temp_bet, spriteOrder);
             flag = draw_play_again(temp_score);
         }
         add_score(temp_initials, temp_score);
