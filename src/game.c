@@ -236,39 +236,15 @@ bool isSpritePixelSet(const char *sprite, int x, int y) {
     return (sprite[byteIndex] >> bit) & 1;
 }
 
-bool pixelPerfectCollision(Player *a, Player *b) {
-
-    const char *aSpriteData = spriteImages[a->sp];
-    const char *bSpriteData = spriteImages[b->sp];
-
-    int x_overlap_start = MAX(a->xpos, b->xpos);
-    int x_overlap_end   = MIN(a->xpos + SPRITE_WIDTH, b->xpos + SPRITE_WIDTH);
-    int y_overlap_start = MAX(a->ypos, b->ypos);
-    int y_overlap_end   = MIN(a->ypos + SPRITE_HEIGHT, b->ypos + SPRITE_HEIGHT);
-
-    if (x_overlap_start >= x_overlap_end || y_overlap_start >= y_overlap_end)
-        return false;
-
-    // Loop over overlapping pixels
-    for (int y = y_overlap_start; y < y_overlap_end; y++) {
-        for (int x = x_overlap_start; x < x_overlap_end; x++) {
-            int a_x = x - a->xpos;
-            int a_y = y - a->ypos;
-            int b_x = x - b->xpos;
-            int b_y = y - b->ypos;
-
-            if (isSpritePixelSet(aSpriteData, a_x, a_y) &&
-                isSpritePixelSet(bSpriteData, b_x, b_y)) {
-                return true; // Collision!
-            }
-        }
-    }
-
-    return false;
+inline bool isColliding(Player *a, Player *b) {
+    return !(a->xpos + SPRITE_WIDTH  < b->xpos ||
+             a->xpos > b->xpos + SPRITE_WIDTH  ||
+             a->ypos + SPRITE_HEIGHT < b->ypos ||
+             a->ypos > b->ypos + SPRITE_HEIGHT);
 }
 
 void handleCollision(Player *p1, Player *p2) {
-    if (pixelPerfectCollision(p1, p2)) {
+    if (isColliding(p1, p2)) {
         p1->xVel = -p1->xVel;
         p1->yVel = -p1->yVel;
         p2->xVel = -p2->xVel;
