@@ -8,7 +8,7 @@
 
 
 
-int main(void)
+int main()
 {
 	__asm {
         jsr $E544 // clear the screen
@@ -26,7 +26,7 @@ int main(void)
         countdown_sequence();
 
         while (flag){
-	        spriteOrder = gameloop();
+	        char *spriteOrder = gameloop();
             temp_score += race_score(temp_bet, spriteOrder);
             flag = draw_play_again(temp_score);
         }

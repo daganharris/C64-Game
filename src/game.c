@@ -300,7 +300,7 @@ bool handleBasketCollision(Player *p1, Player *basket) {
     return false;
 }
 
-inline char *gameloop() {
+inline char* gameloop() {
     poke(53281, 0);
     poke(53280, 12);
     poke(646,1);
