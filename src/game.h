@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-void gameloop();
+char *gameloop();
 extern char * const Screen = (char *)0x0400;
 
 #pragma compile("game.c")

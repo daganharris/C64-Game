@@ -228,6 +228,14 @@ inline bool isColliding(Player *a, Player *b) {
              a->ypos > b->ypos + SPRITE_HEIGHT);
 }
 
+bool isSpritePixelSet(const char *sprite, int x, int y) {
+    if (x < 0 || x >= 24 || y < 0 || y >= 21) return false;
+
+    int byteIndex = y * 3 + x / 8;
+    int bit = 7 - (x % 8);
+    return (sprite[byteIndex] >> bit) & 1;
+}
+
 bool pixelPerfectCollision(Player *a, Player *b) {
 
     const char *aSpriteData = spriteImages[a->sp];
