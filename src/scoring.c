@@ -86,17 +86,3 @@ char * enter_initials(){
     gets_s(temp_initials,4);
     return temp_initials;
 }
-
-const int point_values[] = {50, 25, 0};
-// Blueberry = 0, Apple = 1, Banana = 2
-
-int race_score(byte bet, byte * order) {
-    int points = 0;
-    if (order[0] == bet) {
-        points = 50;
-    }
-    if (order[1] == bet) {
-        points = 25;
-    }
-    return points;
-}

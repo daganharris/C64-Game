@@ -16,20 +16,18 @@ int main()
 
     while (1) {
         byte flag = 1;
-        int temp_score = 0;
-        byte spriteOrder[3];
+        int session_score = 0;
         // Blueberry = 0, Apple = 1, Banana = 2
-        byte temp_bet = 0;
+        byte session_bet = 255;
 
         draw_start();
-        char * temp_initials = enter_initials();
+        char * session_initials = enter_initials();
         countdown_sequence();
-
         while (flag){
-	        char *spriteOrder = gameloop();
-            temp_score += race_score(temp_bet, spriteOrder);
-            flag = draw_play_again(temp_score);
+            int s_session_score = gameloop_wrapper(session_bet);
+            session_score += s_session_score;
+            flag = draw_play_again(session_score);
         }
-        add_score(temp_initials, temp_score);
+        add_score(session_initials, session_score);
     }
 }

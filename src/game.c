@@ -286,7 +286,21 @@ bool handleBasketCollision(Player *p1, Player *basket) {
     return false;
 }
 
-inline char* gameloop() {
+const int point_values[] = {50, 25, 0};
+// Blueberry = 0, Apple = 1, Banana = 2
+
+int calculate_race_score(byte bet, byte * order) {
+    int points = 0;
+    if (order[0] == bet) {
+        points = 50;
+    }
+    if (order[1] == bet) {
+        points = 25;
+    }
+    return points;
+}
+
+inline void gameloop() {
     poke(53281, 0);
     poke(53280, 12);
     poke(646,1);
@@ -304,6 +318,7 @@ inline char* gameloop() {
 
 
     bool gameOver = false;
+    printf("Starting gameloop");
     while (!gameOver) {        
         updatesprite(&Blueberry);
         updatesprite(&Banana);
@@ -319,5 +334,10 @@ inline char* gameloop() {
 
         vic_waitFrame();
     }
-    return spriteOrder;
+}
+
+int gameloop_wrapper(byte bet){
+    gameloop();
+    int race_score = calculate_race_score(bet, spriteOrder);
+    return race_score;
 }
