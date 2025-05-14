@@ -298,7 +298,7 @@ void draw_map1(){
 	draw_screen(map1_screen);
 }
 
-byte draw_play_again(int score){
+char draw_play_again(int score){
 	draw_screen(play_again_screen);
 	while (1){
 		char c = getch();

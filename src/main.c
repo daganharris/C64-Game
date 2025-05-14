@@ -15,19 +15,21 @@ int main()
     }
 
     while (1) {
-        byte flag = 1;
+        char flag = 1;
         int session_score = 0;
         // Blueberry = 0, Apple = 1, Banana = 2
-        byte session_bet = 255;
+        int session_bet = 0;
 
         draw_start();
         char * session_initials = enter_initials();
         countdown_sequence();
         while (flag){
-            int s_session_score = gameloop_wrapper(session_bet);
+            gameloop();
+            int s_session_score = gameloop_fix_i_pray(session_bet);
             session_score += s_session_score;
             flag = draw_play_again(session_score);
         }
         add_score(session_initials, session_score);
+        
     }
 }

@@ -300,7 +300,7 @@ int calculate_race_score(byte bet, byte * order) {
     return points;
 }
 
-inline void gameloop() {
+void gameloop() {
     poke(53281, 0);
     poke(53280, 12);
     poke(646,1);
@@ -336,8 +336,7 @@ inline void gameloop() {
     }
 }
 
-int gameloop_wrapper(byte bet){
-    gameloop();
+int gameloop_fix_i_pray(int bet){
     int race_score = calculate_race_score(bet, spriteOrder);
     return race_score;
 }
